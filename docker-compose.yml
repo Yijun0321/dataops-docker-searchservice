@@ -1,0 +1,29 @@
+version: '2.2'
+services:
+  elastic-dataops:
+      image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+      container_name: elastic-dataops
+      environment:
+        - cluster.name=docker-cluster
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+        - discovery.type=single-node
+        - xpack.security.enabled=false
+      ulimits:
+        memlock:
+          soft: -1
+          hard: -1
+      ports:
+        - 9200:9200
+  feeder:
+      build: feeder-app
+      volumes:
+        - ./mydata:/data
+      depends_on:
+        - elastic-dataops
+  movie-search:
+      build: movie-search
+      ports:
+         - 8000:8000
+      depends_on:
+        - elastic-dataops
